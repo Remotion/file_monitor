@@ -23,7 +23,5 @@ public:
   virtual path_t base_path() const = 0;
 
   virtual void poll(change_event_t const& consumer) = 0;
-
-private:
 };
-}
+} // namespace file_monitor

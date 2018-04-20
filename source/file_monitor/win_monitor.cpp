@@ -1,5 +1,5 @@
 #include "win_monitor.hpp"
-#include <array>
+// #include <array>
 
 using namespace file_monitor;
 
@@ -39,16 +39,16 @@ void win_monitor::start(path_t const& base_path)
   m_base_path = base_path;
 
   // Get a handle for the directory to watch
-  m_directory_handle = CreateFile(base_path.string().c_str(),
+  m_directory_handle = CreateFileA(base_path.string().c_str(), // TODO(Remo 20.04.18): if UNICODE is defined then CreateFile will be replaced by CreateFileW and we get compilation error. 
                                   FILE_LIST_DIRECTORY,
                                   FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
-                                  NULL,
+                                  nullptr,
                                   OPEN_EXISTING,
                                   FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-                                  NULL);
+                                  nullptr);
 
   // Create an event for the polling
-  m_notify_event = CreateEvent(NULL, FALSE, FALSE, "FileChangedEvent");
+  m_notify_event = CreateEventA(nullptr, FALSE, FALSE, "FileChangedEvent"); // TODO(Remo 20.04.18): if UNICODE is defined then CreateEvent will be replaced by CreateEventW and we get compilation error. 
 
   if (m_notify_event == nullptr)
     throw std::runtime_error("FileMonitor failed to create event.");
@@ -61,7 +61,7 @@ void win_monitor::start(path_t const& base_path)
 void win_monitor::poll(change_event_t const& consumer)
 {
   DWORD bytes_written = 0;
-  BOOL result = GetOverlappedResult(m_notify_event, &m_overlapped_io, &bytes_written, FALSE);
+  const BOOL result = GetOverlappedResult(m_notify_event, &m_overlapped_io, &bytes_written, FALSE);
 
   // No results yet?
   if (result == FALSE)
@@ -76,13 +76,13 @@ void win_monitor::poll(change_event_t const& consumer)
   const char* current_entry = m_result_buffer.data();
   while (true)
   {
-    auto file_info = reinterpret_cast<FILE_NOTIFY_INFORMATION const*>(current_entry);
+    const auto file_info = reinterpret_cast<FILE_NOTIFY_INFORMATION const*>(current_entry);
 
     if (file_info->Action == FILE_ACTION_MODIFIED ||
         file_info->Action == FILE_ACTION_RENAMED_NEW_NAME)
     {
       // Note that FileName uses 16-bit chars, while the FileNameLength is in bytes!
-      auto character_count = file_info->FileNameLength / 2;
+      const auto character_count = file_info->FileNameLength / 2;
       m_files_changed.push_back({ file_info->FileName, file_info->FileName + character_count });
     }
 
@@ -102,14 +102,14 @@ void file_monitor::win_monitor::listen()
 {
   DWORD unused = 0;
 
-  BOOL result = ReadDirectoryChangesW(m_directory_handle,
-                                      m_result_buffer.data(),
-                                      m_result_buffer.size(),
-                                      TRUE,
-                                      FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_FILE_NAME,
-                                      &unused,
-                                      &m_overlapped_io,
-                                      NULL);
+  const BOOL result = ReadDirectoryChangesW(m_directory_handle,
+                                            m_result_buffer.data(),
+                                            DWORD(m_result_buffer.size()),
+                                            TRUE,
+                                            FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_FILE_NAME,
+                                            &unused,
+                                            &m_overlapped_io,
+                                            nullptr);
 
   if (result == 0)
   {
@@ -117,20 +117,19 @@ void file_monitor::win_monitor::listen()
 
     if (!FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                          FORMAT_MESSAGE_IGNORE_INSERTS,
-                       NULL,
+                       nullptr,
                        GetLastError(),
                        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                        (LPTSTR)&buffer,
                        0,
-                       NULL))
+                       nullptr))
     {
       throw std::runtime_error("Could not format error message for ReadDirectoryChangesW failure");
     }
 
-    auto message = std::string((const char*)buffer);
+    const auto message = std::string((const char*)buffer);
     LocalFree(buffer);
 
-    throw std::runtime_error("ReadDirectoryChangesW failed with " +
-                             std::string((const char*)buffer));
+    throw std::runtime_error("ReadDirectoryChangesW failed with " + message);
   }
 }

@@ -41,7 +41,7 @@ void debouncer::poll(change_event_t const& consumer)
 
     for (auto const& file : files)
     {
-      auto found = std::find(stored.begin(), stored.end(), file);
+      const auto found = std::find(stored.begin(), stored.end(), file);
       if (found == stored.end())
         stored.push_back(file);
     }
@@ -51,7 +51,7 @@ void debouncer::poll(change_event_t const& consumer)
     return;
 
   // calculate the time the timer has been running for
-  auto wait_time = clock_t::now() - m_countdown_time;
+  const auto wait_time = clock_t::now() - m_countdown_time;
 
   if (wait_time > m_countdown_length)
   {

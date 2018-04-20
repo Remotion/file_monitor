@@ -1,18 +1,24 @@
 #pragma once
 #include "monitor.hpp"
 
+
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
+#endif
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN	 // Exclude rarely-used stuff from Windows headers
 #endif
 
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 
-#include <boost/algorithm/string/predicate.hpp>
-#include <boost/utility.hpp>
+#include <Windows.h> // for HANDLE, OVERLAPPED
+
+
 #include <chrono>
-#include <windows.h>
+
 
 namespace file_monitor
 {
@@ -41,4 +47,4 @@ private:
 
   std::vector<path_t> m_files_changed;
 };
-}
+} // namespace file_monitor

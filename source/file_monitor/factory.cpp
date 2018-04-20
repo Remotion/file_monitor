@@ -1,6 +1,16 @@
 #include "factory.hpp"
 #include "debouncer.hpp"
 
+
+
+#if !defined(FILE_MONITOR_PLATFORM_MACOS) &&  !defined(FILE_MONITOR_PLATFORM_WIN32) &&  !defined(FILE_MONITOR_PLATFORM_LINUX)
+# if defined(_WIN32)
+#  define FILE_MONITOR_PLATFORM_WIN32
+# endif
+#endif
+
+
+
 #ifdef FILE_MONITOR_PLATFORM_MACOS
 #include "mac_monitor.hpp"
 #endif

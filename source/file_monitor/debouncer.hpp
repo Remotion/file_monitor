@@ -26,4 +26,4 @@ private:
   clock_t::duration m_countdown_length;
   std::vector<path_t> m_files_changed;
 };
-}
+} // namespace file_monitor
