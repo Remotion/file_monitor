@@ -39,16 +39,16 @@ void win_monitor::start(path_t const& base_path)
   m_base_path = base_path;
 
   // Get a handle for the directory to watch
-  m_directory_handle = CreateFileA(base_path.string().c_str(), // TODO(Remo 20.04.18): if UNICODE is defined then CreateFile will be replaced by CreateFileW and we get compilation error. 
-                                  FILE_LIST_DIRECTORY,
-                                  FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
-                                  nullptr,
-                                  OPEN_EXISTING,
-                                  FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-                                  nullptr);
+  m_directory_handle = CreateFileW(base_path.wstring().c_str(),
+                                   FILE_LIST_DIRECTORY,
+                                   FILE_SHARE_READ | FILE_SHARE_DELETE | FILE_SHARE_WRITE,
+                                   nullptr,
+                                   OPEN_EXISTING,
+                                   FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+                                   nullptr);
 
   // Create an event for the polling
-  m_notify_event = CreateEventA(nullptr, FALSE, FALSE, "FileChangedEvent"); // TODO(Remo 20.04.18): if UNICODE is defined then CreateEvent will be replaced by CreateEventW and we get compilation error. 
+  m_notify_event = CreateEventA(nullptr, FALSE, FALSE, "FileChangedEvent");
 
   if (m_notify_event == nullptr)
     throw std::runtime_error("FileMonitor failed to create event.");
